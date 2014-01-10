@@ -11,6 +11,7 @@ type SimulatedMarket struct {
 	FairValueProc *RandomWalkProcess
 	OrderSource   *RandomQuoteProcess
 	OrderBook     *OrderBook
+	OrderReciever chan *Order
 	Orderlog      chan<- *OrderState
 	Tradelog      chan<- *Trade
 	tradeId       int64
@@ -42,7 +43,7 @@ func MakeSimulatedMarket(
 ) *SimulatedMarket {
 	// pipes initialized explicitly
 	fvPipe := make(chan float64)
-	orderPipe := make(chan *Order)
+	orderReciever := make(chan *Order)
 	orderStatePipe := make(chan *OrderState)
 	cancelPipe := make(chan int64)
 
@@ -57,16 +58,17 @@ func MakeSimulatedMarket(
 		OrderSource: &RandomQuoteProcess{
 			Ticker:    ticker,
 			StatePipe: orderStatePipe,
-			OrderPipe: orderPipe,
+			OrderPipe: orderReciever,
 			FvPipe:    fvPipe,
 		},
 		OrderBook: &OrderBook{
 			Ticker:     ticker,
-			pipeAdd:    orderPipe,
+			pipeAdd:    orderReciever,
 			pipeCancel: cancelPipe,
 		},
-		Orderlog: orderlog,
-		Tradelog: tradelog,
+		Orderlog:      orderlog,
+		Tradelog:      tradelog,
+		OrderReciever: orderReciever,
 	}
 
 	return market

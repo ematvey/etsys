@@ -30,6 +30,13 @@ func (se *SimulatedExchange) GetTickers() []string {
 	}
 	return ts
 }
+func (se *SimulatedExchange) SendOrder(o *Order) {
+	m := se.markets[o.Ticker]
+	if m == nil {
+		panic("wrong exchange")
+	}
+	m.OrderReciever <- o
+}
 
 func MakeSimulatedExchange() *SimulatedExchange {
 	se := &SimulatedExchange{
