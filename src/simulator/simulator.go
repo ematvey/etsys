@@ -4,33 +4,42 @@ import (
 	. "etsys"
 	. "etsys/sim"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
+	"time"
 )
 
 func main() {
 
-	fmt.Println("SIMULATION STARTED")
+	log.Print("simulation started")
 
 	sigpipe := make(chan os.Signal)
 	signal.Notify(sigpipe, os.Interrupt)
 
-	ex := MakeSomeSimulatedExchange()
-	ex.Run()
+	sys := MakeSys()
+	sys.Run()
+
+	time.Sleep(time.Millisecond * 50)
+
+	for c := range sys.Connectors {
+		log.Printf("[conn] %+v: %+v", c, sys.Connectors[c])
+	}
 
 	for {
 		select {
-		case t := <-ex.Tradelog:
-			fmt.Printf("%+v\n", t)
-		case o := <-ex.Orderlog:
+		case t := <-sys.Tradelog:
+			log.Printf("[t] %+v", t)
+		case o := <-sys.Orderlog:
 			if o.State == OrderStateCreated {
-				fmt.Printf("order: %+v\n", o)
+				// log.Printf("%+v", o)
 			}
 		case sig := <-sigpipe:
 			if sig == os.Interrupt {
 				fmt.Println("\nSIGINT\nSTATE DUMP\n")
-				for _, t := range ex.GetTickers() {
-					fmt.Println(ex.GetMarket(t).OrderBook)
+				log.Printf("%+v", sys.Tickers())
+				for _, t := range sys.Tickers() {
+					fmt.Println(sys.Connectors[t].StateDump())
 				}
 				os.Exit(1)
 			}

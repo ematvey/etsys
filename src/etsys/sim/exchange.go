@@ -38,17 +38,17 @@ func (se *SimulatedExchange) SendOrder(o *Order) {
 	m.OrderReciever <- o
 }
 
-func MakeSimulatedExchange() *SimulatedExchange {
+func MakeSimulatedExchange(orderlog chan *OrderState, tradelog chan *Trade) *SimulatedExchange {
 	se := &SimulatedExchange{
 		markets:  make(map[string]*SimulatedMarket),
-		Tradelog: make(chan *Trade),
-		Orderlog: make(chan *OrderState),
+		Tradelog: tradelog,
+		Orderlog: orderlog,
 	}
 	return se
 }
 
-func MakeSomeSimulatedExchange() *SimulatedExchange {
-	se := MakeSimulatedExchange()
+func MakeSomeSimulatedExchange(orderlog chan *OrderState, tradelog chan *Trade) *SimulatedExchange {
+	se := MakeSimulatedExchange(orderlog, tradelog)
 	se.AttachMarket(MakeSimulatedMarket("A", se.Orderlog, se.Tradelog))
 	se.AttachMarket(MakeSimulatedMarket("B", se.Orderlog, se.Tradelog))
 	return se

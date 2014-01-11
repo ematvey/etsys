@@ -52,7 +52,7 @@ func MakeSimulatedMarket(
 		FairValueProc: &RandomWalkProcess{
 			Value:      1000.0,
 			Volatility: 0.05,
-			Interval:   250 * time.Millisecond,
+			Interval:   50 * time.Millisecond,
 			Pipe:       fvPipe,
 		},
 		OrderSource: &RandomQuoteProcess{
